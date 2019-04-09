@@ -1,0 +1,179 @@
+//this var comes from the vertex shader
+//they are interpolated by pixel according to the distance from the vertex
+
+varying vec3 position; 
+
+//texture
+varying vec2 v_coord;
+varying vec3 normals; 
+
+
+//here create uniforms for all the data we need here
+uniform mat4 model;
+uniform vec3 kd; 
+
+uniform vec3 id; 
+uniform vec3 is; 
+uniform vec3 ks;
+uniform float alpha;
+
+uniform vec3 ka; 
+uniform vec3 ia; 
+uniform vec3 lp;
+uniform vec3 eye;
+
+uniform vec3 lp_g; 
+uniform vec3 id_g;
+uniform vec3 is_g;
+uniform vec3 ia_g;
+
+uniform vec3 lp_r; 
+uniform vec3 id_r;
+uniform vec3 is_r;
+uniform vec3 ia_r;
+
+uniform float time;
+uniform float time_r;   
+
+
+//the texture passed from the application
+uniform sampler2D color_texture;
+uniform sampler2D normal_texture;
+
+
+
+
+
+void main()
+{
+	//read from the varying vars (the ones from the vertex shader)
+	
+	
+	vec3 normal = normalize((model * (2*texture2D(normal_texture, v_coord)-1)).xyz); 
+	vec3 pos = position;
+	
+	
+	vec3 L = normalize((pos-lp));
+	L = (model * vec4( L.xyz, 0.0)).xyz;	
+
+
+	float LdotN = dot(L, normal);
+	vec3 R = reflect(L,normal);
+	vec3 V = normalize((pos-eye));
+	float RdotV = dot(R,V);
+	
+ 	
+	if(RdotV<0.0){
+	RdotV=0.0; 
+	}
+	
+	RdotV = pow(RdotV,alpha);
+ 
+	//specular texture
+	vec4 spec = texture2D( color_texture, v_coord );
+	vec3 texture;
+	texture.x = spec.x;
+	texture.y = spec.y;
+	texture.z = spec.z; 
+
+	//normals texture
+	
+
+
+ 
+	//computations for phong equation
+	
+	vec3 ambient = ka*(ia);
+	
+	vec3 diffuse = texture*LdotN*(id);
+
+	vec3 specular = spec.w*RdotV*(is);
+	
+
+
+
+//********************************GREEN LIGHT*****************************************************
+
+	
+	
+	L = normalize((pos-lp_g));
+	L = (model * vec4( L.xyz, 0.0)).xyz;	
+
+
+	LdotN = dot(L, normal);
+	R = reflect(L,normal);
+	V = normalize((pos-eye));
+	RdotV = dot(R,V);
+	
+ 	
+	if(RdotV<0.0){
+	RdotV=0.0; 
+	}
+	
+	RdotV = pow(RdotV,alpha);
+ 
+	//specular texture
+	
+	
+	 
+
+	//normals texture	
+
+
+ 
+	//computations for phong equation
+	
+	vec3 ambient_g = ka*(ia_g*time);
+	
+	vec3 diffuse_g= texture*LdotN*(id_g*time);
+
+	vec3 specular_g= spec.w*RdotV*(is_g*time);
+
+
+//********************************RED LIGHT*****************************************************
+
+	
+	
+	L = normalize((pos-lp_r));
+	L = (model * vec4( L.xyz, 0.0)).xyz;	
+
+
+	LdotN = dot(L, normal);
+	R = reflect(L,normal);
+	V = normalize((pos-eye));
+	RdotV = dot(R,V);
+	
+ 	
+	if(RdotV<0.0){
+	RdotV=0.0; 
+	}
+	
+	RdotV = pow(RdotV,alpha);
+ 
+
+	//normals texture	
+
+
+ 
+	//computations for phong equation
+	
+	vec3 ambient_r = ka*(ia_r*time_r);
+	
+	vec3 diffuse_r= texture*LdotN*(id_r*time_r);
+
+	vec3 specular_r= spec.w*RdotV*(is_r*time_r);
+
+
+
+
+
+
+
+
+	//final 
+	vec3 color = ambient+diffuse+specular+ambient_g+diffuse_g+specular_g+ambient_r+diffuse_r+specular_r;
+	
+
+	//set the ouput color por the pixel
+	gl_FragColor = vec4( color, 1.0 );
+}

@@ -1,0 +1,16 @@
+//this var comes from the vertex shader
+//they are interpolated by pixel according to the distance from the vertex
+varying vec3 v_color;
+
+//here create uniforms for all the data we need here
+
+void main()
+{
+	//read from the varying vars (the ones from the vertex shader)
+	vec3 color = v_color;
+
+	//computations in PHONG, in GOURAUD you dont need to do anything here
+
+	//set the ouput color por the pixel
+	gl_FragColor = vec4( color, 1.0 );
+}

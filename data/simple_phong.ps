@@ -1,0 +1,60 @@
+//this var comes from the vertex shader
+//they are interpolated by pixel according to the distance from the vertex
+//varying vec3 v_color;
+varying vec3 N;
+varying vec3 position; 
+
+//here create uniforms for all the data we need here
+uniform mat4 model;
+uniform vec3 kd; 
+uniform vec3 id;
+ 
+uniform vec3 is; 
+uniform vec3 ks;
+uniform float alpha;
+
+uniform vec3 ka; 
+uniform vec3 ia; 
+uniform vec3 lp;
+uniform vec3 eye; 
+
+
+
+void main()
+{
+	//read from the varying vars (the ones from the vertex shader)
+	//vec3 color = v_color;
+	vec3 normal = N;
+	vec3 pos = position;
+	
+	//computations in PHONG, in GOURAUD you dont need to do anything here
+	
+	
+	vec3 L = normalize((pos-lp));
+	L = (model * vec4( L.xyz, 0.0)).xyz;	
+
+
+	float LdotN = dot(L, normal);
+	vec3 R = reflect(L,normal);
+	vec3 V = normalize((pos-eye));
+	float RdotV = dot(R,V);
+	
+ 	
+	if(RdotV<0.0){
+	RdotV=0.0; 
+	}
+	
+	RdotV = pow(RdotV,alpha); 
+	
+	vec3 ambient = ka*ia;
+	
+	vec3 diffuse = kd*LdotN*id;
+
+	vec3 specular = ks*RdotV*is;
+	
+	vec3 color = ambient+diffuse+specular;
+	
+
+	//set the ouput color por the pixel
+	gl_FragColor = vec4( color, 1.0 );
+}
